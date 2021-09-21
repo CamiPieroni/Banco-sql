@@ -323,29 +323,29 @@ CREATE TABLE Transferencia
 ) ENGINE=InnoDB;
 
 
--- #USUARIOS 23
+#USUARIOS
 
--- CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
--- GRANT ALL PRIVILEGES ON banco.* TO admin@localhost WITH GRANT OPTION;
+CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
+GRANT ALL PRIVILEGES ON banco.* TO 'admin'@'localhost' WITH GRANT OPTION;
 -- flush privileges;
 
 
--- #empleado y privilegios
--- CREATE USER 'empleado'@'%' IDENTIFIED BY 'empleado';
--- GRANT SELECT ON  banco.Empleado TO 'empleado'@'%';
--- GRANT SELECT ON  banco.Sucursal TO 'empleado'@'%';
--- GRANT SELECT ON  banco.Tasa_Plazo_Fijo TO 'empleado'@'%';
--- GRANT SELECT ON  banco.Tasa_Prestamo TO 'empleado'@'%';
+#empleado y privilegios
+CREATE USER 'empleado'@'%' IDENTIFIED BY 'empleado';
+GRANT SELECT ON  banco.Empleado TO 'empleado'@'%';
+GRANT SELECT ON  banco.Sucursal TO 'empleado'@'%';
+GRANT SELECT ON  banco.Tasa_Plazo_Fijo TO 'empleado'@'%';
+GRANT SELECT ON  banco.Tasa_Prestamo TO 'empleado'@'%';
 
--- GRANT SELECT,INSERT ON  banco.Prestamo TO 'empleado'@'%';
--- GRANT SELECT,INSERT ON  banco.Plazo_Fijo TO 'empleado'@'%';
--- GRANT SELECT,INSERT ON  banco.Plazo_Cliente TO 'empleado'@'%';
--- GRANT SELECT,INSERT ON  banco.Caja_Ahorro TO 'empleado'@'%';
--- GRANT SELECT,INSERT ON  banco.Tarjeta TO 'empleado'@'%';
+GRANT SELECT,INSERT ON  banco.Prestamo TO 'empleado'@'%';
+GRANT SELECT,INSERT ON  banco.Plazo_Fijo TO 'empleado'@'%';
+GRANT SELECT,INSERT ON  banco.Plazo_Cliente TO 'empleado'@'%';
+GRANT SELECT,INSERT ON  banco.Caja_Ahorro TO 'empleado'@'%';
+GRANT SELECT,INSERT ON  banco.Tarjeta TO 'empleado'@'%';
 
--- GRANT SELECT,INSERT,UPDATE ON  banco.Cliente_CA TO 'empleado'@'%';
--- GRANT SELECT,INSERT,UPDATE ON  banco.Cliente TO 'empleado'@'%';
--- GRANT SELECT,INSERT,UPDATE ON  banco.Pago TO 'empleado'@'%';
+GRANT SELECT,INSERT,UPDATE ON  banco.Cliente_CA TO 'empleado'@'%';
+GRANT SELECT,INSERT,UPDATE ON  banco.Cliente TO 'empleado'@'%';
+GRANT SELECT,INSERT,UPDATE ON  banco.Pago TO 'empleado'@'%';
 
 -- drop user ''@localhost;
 
