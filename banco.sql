@@ -2,6 +2,10 @@ CREATE DATABASE banco;
 
 USE banco;
 
+drop user 'admin'@'localhost';
+drop user 'empleado'@'%';
+drop user 'atm'@'%';
+
 CREATE TABLE Ciudad
 (
 	nombre VARCHAR(45) NOT NULL, 
@@ -10,9 +14,7 @@ CREATE TABLE Ciudad
 	CONSTRAINT digitos_codigo_postal
 		CHECK(cod_postal between 1 and 9999),
 	
-	CONSTRAINT PK_ciudad
 	PRIMARY KEY (cod_postal)
- 
 ) ENGINE=InnoDB;
 
 CREATE TABLE Sucursal
@@ -36,7 +38,7 @@ CREATE TABLE Empleado
 	legajo SMALLINT(4) UNSIGNED ZEROFILL NOT NULL UNIQUE AUTO_INCREMENT,
 	apellido VARCHAR(45) NOT NULL,
 	nombre VARCHAR(45) NOT NULL,
-	tipo_doc VARCHAR(45) NOT NULL,
+	tipo_doc VARCHAR(20) NOT NULL,
 	direccion VARCHAR(45) NOT NULL,
 	telefono VARCHAR(45) NOT NULL,
 	cargo VARCHAR(45) NOT NULL,
@@ -53,17 +55,17 @@ CREATE TABLE Empleado
 
 CREATE TABLE Cliente
 (
-	nro_cliente INT(5) UNSIGNED ZEROFILL NOT NULL AUTO_INCREMENT,
+	nro_cliente INT(5) UNSIGNED ZEROFILL NOT NULL UNIQUE AUTO_INCREMENT,
 	apellido VARCHAR(45) NOT NULL,
 	nombre VARCHAR(45) NOT NULL,
-	tipo_doc VARCHAR(45) NOT NULL,
+	tipo_doc VARCHAR(20) NOT NULL,
 	direccion VARCHAR(45) NOT NULL,
 	telefono VARCHAR(45) NOT NULL,
 	nro_doc INT(8) UNSIGNED ZEROFILL NOT NULL,
 	fecha_nac DATE NOT NULL,
 	 
 	CONSTRAINT PK_Cliente
-	PRIMARY KEY (nro_cliente),
+	PRIMARY KEY (nro_cliente)
 ) ENGINE=InnoDB;
 
 CREATE TABLE Plazo_Fijo
@@ -111,10 +113,10 @@ CREATE TABLE Prestamo
 	nro_prestamo INT(8) UNSIGNED ZEROFILL NOT NULL AUTO_INCREMENT,
 	fecha DATE NOT NULL,
 	cant_meses TINYINT(2) UNSIGNED ZEROFILL NOT NULL,
-	monto  DECIMAL (16,2) UNSIGNED NOT NULL,
+	monto  DECIMAL(10,2) UNSIGNED NOT NULL,
 	tasa_interes  DECIMAL (4,2) UNSIGNED NOT NULL,
-	interes  DECIMAL (16,2) UNSIGNED NOT NULL,
-	valor_cuota DECIMAL (16,2) UNSIGNED NOT NULL,
+	interes  DECIMAL (9,2) UNSIGNED NOT NULL,
+	valor_cuota DECIMAL (9,2) UNSIGNED NOT NULL,
 	legajo SMALLINT(4) UNSIGNED ZEROFILL NOT NULL,
 	nro_cliente INT(5) UNSIGNED ZEROFILL NOT NULL,
 
@@ -143,8 +145,8 @@ CREATE TABLE Pago
 CREATE TABLE Tasa_Prestamo
 (
 	periodo INT(3) UNSIGNED ZEROFILL NOT NULL,
-	monto_inf  DECIMAL (16,2) UNSIGNED NOT NULL,
-	monto_sup DECIMAL (16,2) UNSIGNED NOT NULL,
+	monto_inf  DECIMAL (10,2) UNSIGNED NOT NULL,
+	monto_sup DECIMAL (10,2) UNSIGNED NOT NULL,
 	tasa DECIMAL(4,2) UNSIGNED NOT NULL,
 
 	CONSTRAINT PK_Tasa_Prestamo
@@ -201,7 +203,7 @@ CREATE TABLE Caja
 
 CREATE TABLE Ventanilla
 (
-	cod_caja NT(5) UNSIGNED ZEROFILL NOT NULL,
+	cod_caja INT(5) UNSIGNED ZEROFILL NOT NULL,
 	nro_suc SMALLINT(3) UNSIGNED ZEROFILL NOT NULL,
 
 	CONSTRAINT PK_Ventanilla
@@ -244,7 +246,7 @@ CREATE TABLE Transaccion
 CREATE TABLE Debito
 (
 	nro_trans INT(10) UNSIGNED ZEROFILL NOT NULL,
-	descripcion VARCHAR(45),
+	descripcion TINYTEXT,
 	nro_cliente INT(5) UNSIGNED ZEROFILL NOT NULL,
 	nro_ca INT(8) UNSIGNED ZEROFILL NOT NULL,
 
@@ -327,7 +329,7 @@ CREATE TABLE Transferencia
 
 CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
 GRANT ALL PRIVILEGES ON banco.* TO 'admin'@'localhost' WITH GRANT OPTION;
--- flush privileges;
+flush privileges;
 
 
 #empleado y privilegios
@@ -347,41 +349,39 @@ GRANT SELECT,INSERT,UPDATE ON  banco.Cliente_CA TO 'empleado'@'%';
 GRANT SELECT,INSERT,UPDATE ON  banco.Cliente TO 'empleado'@'%';
 GRANT SELECT,INSERT,UPDATE ON  banco.Pago TO 'empleado'@'%';
 
--- drop user ''@localhost;
+
+CREATE USER 'atm'@'%' IDENTIFIED BY 'atm';
 
 
--- CREATE USER 'atm'@'%' IDENTIFIED BY 'atm';
+CREATE VIEW trans_depo as 
+SELECT ca.nro_ca , ca.saldo, t.nro_trans, t.fecha, t.hora, "Deposito" as tipo, t.monto , t_caja.cod_caja as cod_caja ,
+			NULL as nro_cliente, NULL as tipo_doc, NULL as nro_doc, NULL as nombre, NULL as apellido, NULL as destino
+    FROM (((Caja_Ahorro as ca JOIN Deposito as t_d ON ca.nro_ca=t_d.nro_ca)
+   		JOIN Transaccion_por_caja AS t_caja ON t_caja.nro_trans=t_d.nro_trans)
+   		JOIN Transaccion As t ON t.nro_trans=t_caja.nro_trans);
 
+CREATE VIEW trans_ext as 
+SELECT ca.nro_ca , ca.saldo, t.nro_trans, t.fecha, t.hora, "Extraccion" as tipo, t.monto , t_caja.cod_caja as cod_caja ,
+			c.nro_cliente as nro_cliente, c.tipo_doc as tipo_doc, c.nro_doc as nro_doc, c.nombre as nombre, c.apellido as apellido, NULL as destino
+   FROM ((((Caja_Ahorro as ca JOIN Extraccion as t_e ON ca.nro_ca=t_e.nro_ca)
+   		JOIN Transaccion_por_caja AS t_caja ON t_caja.nro_trans=t_e.nro_trans)
+   		JOIN Transaccion As t ON t.nro_trans=t_caja.nro_trans) JOIN Cliente as c ON c.nro_cliente=t_e.nro_cliente);
 
--- CREATE VIEW trans_depo as 
--- SELECT ca.nro_ca , ca.saldo, t.nro_trans, t.fecha, t.hora, "Deposito" as tipo, t.monto , t_caja.cod_caja as cod_caja ,
--- 			"vacio" as nro_cliente, "vacio" as tipo_doc, "vacio" as nro_doc, "vacio" as nombre, "vacio" as apellido, "vacio" as destino
---     FROM (((Caja_Ahorro as ca JOIN Deposito as t_d ON ca.nro_ca=t_d.nro_ca)
---    		JOIN Transaccion_por_caja AS t_caja ON t_caja.nro_trans=t_d.nro_trans)
---    		JOIN Transaccion As t ON t.nro_trans=t_caja.nro_trans);
+CREATE VIEW trans_deb as 
+SELECT ca.nro_ca , ca.saldo, t.nro_trans, t.fecha, t.hora, "Debito" as tipo, t.monto , NULL as cod_caja,
+			c.nro_cliente as nro_cliente, c.tipo_doc as tipo_doc, c.nro_doc as nro_doc, c.nombre as nombre, c.apellido as apellido, NULL as destino
+   FROM (((Caja_Ahorro as ca JOIN Debito as t_deb ON ca.nro_ca=t_deb.nro_ca)
+   		JOIN Transaccion As t ON t.nro_trans=t_deb.nro_trans) JOIN Cliente as c ON c.nro_cliente=t_deb.nro_cliente);
 
--- CREATE VIEW trans_ext as 
--- SELECT ca.nro_ca , ca.saldo, t.nro_trans, t.fecha, t.hora, "Extraccion" as tipo, t.monto , t_caja.cod_caja as cod_caja ,
--- 			c.nro_cliente as nro_cliente, c.tipo_doc as tipo_doc, c.nro_doc as nro_doc, c.nombre as nombre, c.apellido as apellido, "vacio" as destino
---    FROM ((((Caja_Ahorro as ca JOIN Extraccion as t_e ON ca.nro_ca=t_e.nro_ca)
---    		JOIN Transaccion_por_caja AS t_caja ON t_caja.nro_trans=t_e.nro_trans)
---    		JOIN Transaccion As t ON t.nro_trans=t_caja.nro_trans) JOIN Cliente as c ON c.nro_cliente=t_e.nro_cliente);
-
--- CREATE VIEW trans_deb as 
--- SELECT ca.nro_ca , ca.saldo, t.nro_trans, t.fecha, t.hora, "Debito" as tipo, t.monto , "vacio" as cod_caja,
--- 			c.nro_cliente as nro_cliente, c.tipo_doc as tipo_doc, c.nro_doc as nro_doc, c.nombre as nombre, c.apellido as apellido, "vacio" as destino
---    FROM (((Caja_Ahorro as ca JOIN Debito as t_deb ON ca.nro_ca=t_deb.nro_ca)
---    		JOIN Transaccion As t ON t.nro_trans=t_deb.nro_trans) JOIN Cliente as c ON c.nro_cliente=t_deb.nro_cliente);
-
--- CREATE VIEW trans_trans as 
--- SELECT ca.nro_ca , ca.saldo, t.nro_trans, t.fecha, t.hora, "Transferencia" as tipo, t.monto , t_caja.cod_caja as cod_caja ,
--- 			c.nro_cliente as nro_cliente, c.tipo_doc as tipo_doc, c.nro_doc as nro_doc, c.nombre as nombre, c.apellido as apellido, t_t.destino as destino
---    FROM ((((Caja_Ahorro as ca JOIN Transferencia as t_t ON ca.nro_ca=t_t.origen)
---    		JOIN Transaccion_por_caja AS t_caja ON t_caja.nro_trans=t_t.nro_trans)
---    		JOIN Transaccion As t ON t.nro_trans=t_caja.nro_trans) JOIN Cliente as c ON c.nro_cliente=t_t.nro_cliente);
+CREATE VIEW trans_trans as 
+SELECT ca.nro_ca , ca.saldo, t.nro_trans, t.fecha, t.hora, "Transferencia" as tipo, t.monto , t_caja.cod_caja as cod_caja ,
+			c.nro_cliente as nro_cliente, c.tipo_doc as tipo_doc, c.nro_doc as nro_doc, c.nombre as nombre, c.apellido as apellido, t_t.destino as destino
+   FROM ((((Caja_Ahorro as ca JOIN Transferencia as t_t ON ca.nro_ca=t_t.origen)
+   		JOIN Transaccion_por_caja AS t_caja ON t_caja.nro_trans=t_t.nro_trans)
+   		JOIN Transaccion As t ON t.nro_trans=t_caja.nro_trans) JOIN Cliente as c ON c.nro_cliente=t_t.nro_cliente);
  
--- CREATE VIEW trans_cajas_ahorro as 
--- SELECT * FROM trans_depo UNION select * FROM trans_ext UNION select * FROM trans_deb UNION select * from trans_trans;
+CREATE VIEW trans_cajas_ahorro as 
+SELECT * FROM trans_depo UNION select * FROM trans_ext UNION select * FROM trans_deb UNION select * from trans_trans;
 
--- GRANT SELECT ON  banco.trans_cajas_ahorro TO 'atm'@'%';
--- GRANT SELECT , UPDATE ON banco.Tarjeta TO 'atm'@'%';	
+GRANT SELECT ON  banco.trans_cajas_ahorro TO 'atm'@'%';
+GRANT SELECT , UPDATE ON banco.Tarjeta TO 'atm'@'%';	
