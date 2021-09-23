@@ -2,6 +2,7 @@ CREATE DATABASE banco;
 
 USE banco;
 
+drop user ''@'localhost';
 drop user 'admin'@'localhost';
 drop user 'empleado'@'%';
 drop user 'atm'@'%';
@@ -329,8 +330,6 @@ CREATE TABLE Transferencia
 
 CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
 GRANT ALL PRIVILEGES ON banco.* TO 'admin'@'localhost' WITH GRANT OPTION;
-flush privileges;
-
 
 #empleado y privilegios
 CREATE USER 'empleado'@'%' IDENTIFIED BY 'empleado';
