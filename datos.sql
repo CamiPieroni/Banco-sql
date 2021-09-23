@@ -216,7 +216,7 @@ INSERT INTO debito(nro_trans, descripcion, nro_cliente, nro_ca)
 INSERT INTO transaccion(nro_trans, fecha, hora, monto)
     VALUES(1002,'2020-11-2','00:00:00',1000); 
 INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1002,2); 
-INSERT INTO deposito(nro_trans, nro_ca) VALUES(2000,1);
+INSERT INTO deposito(nro_trans, nro_ca) VALUES(1002,1);
 
 # extracion por caja = 10 (ATM), caja_ahorro = 1, cliente 1
 INSERT INTO transaccion(nro_trans, fecha, hora, monto)
