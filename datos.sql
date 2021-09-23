@@ -250,7 +250,7 @@ INSERT INTO transferencia(nro_trans, nro_cliente, origen, destino) VALUES(1007,1
 
 # debito caja_ahorro 1, cliente 1
 INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1008,'2020-11-9','00:00:00',60); 
+    VALUES(1008,'2020-11-9','00:00:00',1); 
 INSERT INTO debito(nro_trans, descripcion, nro_cliente, nro_ca) 
 VALUES(1008,'Varios',1,1); 
 
