@@ -1,28 +1,5 @@
 USE banco;
 
-DELETE FROM debito;
-DELETE FROM deposito;
-DELETE FROM transferencia;
-DELETE FROM extraccion;
-DELETE FROM transaccion_por_caja;
-DELETE FROM transaccion;
-DELETE FROM atm;
-DELETE FROM ventanilla;
-DELETE FROM caja;
-DELETE FROM tarjeta;
-DELETE FROM cliente_CA;
-DELETE FROM caja_ahorro;
-DELETE FROM tasa_prestamo;
-DELETE FROM pago;
-DELETE FROM prestamo;
-DELETE FROM plazo_cliente;
-DELETE FROM tasa_plazo_fijo;
-DELETE FROM plazo_fijo;
-DELETE FROM cliente;
-DELETE FROM empleado;
-DELETE FROM sucursal;
-DELETE FROM ciudad;
-
 # Inserto 2 ciudades Buenos Aires, Bahia Blanca
 
 INSERT INTO ciudad(cod_postal,Nombre) VALUES (1000, 'Buenos Aires');
@@ -183,13 +160,7 @@ INSERT INTO Cliente_CA(nro_cliente, nro_ca) VALUES (4,4);
 INSERT INTO Cliente_CA(nro_cliente, nro_ca) VALUES (5,4);  
 INSERT INTO Cliente_CA(nro_cliente, nro_ca) VALUES (6,4);  
  
-# Tarjeta nro_tarjeta=X, pin=XXXX
-# La tarjeta 1 esta asociada al par caja-cliente (1,1)
-# La tarjeta 2 esta asociada al par caja-cliente (2,2)
-# La tarjeta 3 esta asociada al par caja-cliente (3,3)
-# La tarjeta 4 esta asociada al par caja-cliente (4,4)
-# La tarjeta 5 esta asociada al par caja-cliente (5,4)
-# La tarjeta 6 esta asociada al par caja-cliente (6,4)
+# Tarjeta nro_tarjeta=X, pin=XXXX, nro_cliente=X, nro_caja=(segun cliente_CA)
  
 INSERT INTO tarjeta(nro_tarjeta, PIN, CVT, fecha_venc, nro_cliente, nro_ca)
     VALUES(1,md5('1111'),md5('111'),'2025-6-6',1,1);
@@ -235,102 +206,80 @@ INSERT INTO ATM(cod_caja, cod_postal, direccion) VALUES(12,1000,'Dir ATM 12-BA')
 
 # transacciones
 
-#
+# debito de 40p  caja ahorro 1 cliente 1
 INSERT INTO transaccion(nro_trans, fecha, hora, monto)
-    VALUES(1001,'2020-11-1','00:00:00',40.50); 
+    VALUES(1001,'2020-11-1','00:00:00',40); 
 INSERT INTO debito(nro_trans, descripcion, nro_cliente, nro_ca)
     VALUES(1001,'Pago Servicios',1,1); 
 
+# deposito de 1000 caja = 2, caja_ahorro 1
 INSERT INTO transaccion(nro_trans, fecha, hora, monto)
-    VALUES(1002,'2020-11-2','00:00:00',1001); 
+    VALUES(1002,'2020-11-2','00:00:00',1000); 
 INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1002,2); 
 INSERT INTO deposito(nro_trans, nro_ca) VALUES(1002,1);
 
+# extracion por caja = 10 (ATM), caja_ahorro = 1, cliente 1
 INSERT INTO transaccion(nro_trans, fecha, hora, monto)
-    VALUES(1003,'2020-11-3','00:00:00',101); 
+    VALUES(1003,'2020-11-3','00:00:00',100); 
 INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1003,10); 
-INSERT INTO extraccion(nro_trans, nro_cliente, nro_ca) VALUES(1003,7,1);
+INSERT INTO extraccion(nro_trans, nro_cliente, nro_ca) VALUES(1003,1,1);
 
+# transferencia por caja = 11 (ATM), de la caja_ahorro 1 hacia la 2, cliente 1
 INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1004,'2020-11-4','00:00:00',501); 
+    VALUES(1004,'2020-11-4','00:00:00',500); 
 INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1004,11); 
-INSERT INTO transferencia(nro_trans, nro_cliente, origen, destino) VALUES(1004,1,1,2);
+INSERT INTO transferencia(nro_trans, nro_cliente, origen, destino) VALUES(1004,1,1,2); 
 
+# deposito por caja= 3, caja_ahorro = 1
 INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1005,'2020-11-5','00:00:00',50.50); 
+    VALUES(1005,'2020-11-6','00:00:00',1000); 
+INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1005,3); 
+INSERT INTO deposito(nro_trans, nro_ca) VALUES(1005,1);
+
+# extraccion por caja 12 (ATM), caja_ahorro 1, cliente 1
+INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
+    VALUES(1006,'2020-11-7','00:00:00',300); 
+INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1006,12); 
+INSERT INTO extraccion(nro_trans, nro_cliente, nro_ca) VALUES(1006,1,1);
+
+# transferencia por caja = 13 (ATM), desde caja_ahorro 1  hacia 3, cliente 1
+INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
+    VALUES(1007,'2020-11-8','00:00:00',700); 
+INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1007,13); 
+INSERT INTO transferencia(nro_trans, nro_cliente, origen, destino) VALUES(1007,1,1,3);
+
+# debito caja_ahorro 1, cliente 1
+INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
+    VALUES(1008,'2020-11-9','00:00:00',60); 
 INSERT INTO debito(nro_trans, descripcion, nro_cliente, nro_ca) 
-    VALUES(1005,'Pago servicios',7,1); 
+VALUES(1008,'Varios',1,1); 
 
+# deposito por caja =2, caja_ahorro 1
 INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1006,'2020-11-6','00:00:00',1002); 
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1006,3); 
-INSERT INTO deposito(nro_trans, nro_ca) VALUES(1006,1);
+    VALUES(1009,'2020-11-10','00:00:00',1003);
+INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1009,2);  
+INSERT INTO deposito(nro_trans, nro_ca) VALUES(1009,1);
 
+# extraccion por caja=10 (ATM) cliente 1, caja_ahorro 1
 INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1007,'2020-11-7','00:00:00',102); 
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1007,12); 
-INSERT INTO extraccion(nro_trans, nro_cliente, nro_ca) VALUES(1007,1,1);
+    VALUES(1010,'2020-11-11','00:00:00',103); 
+INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1010,10);  
+INSERT INTO extraccion(nro_trans, nro_cliente, nro_ca) VALUES(1010,1,1);
 
-INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1008,'2020-11-8','00:00:00',502); 
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1008,13); 
-INSERT INTO transferencia(nro_trans, nro_cliente, origen, destino) VALUES(1008,7,1,3);
-
-INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1009,'2020-11-9','00:00:00',60.50); 
-INSERT INTO debito(nro_trans, descripcion, nro_cliente, nro_ca) 
-VALUES(1009,'Pago servicios',1,1); 
-
-INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1010,'2020-11-10','00:00:00',1003);
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1010,2);  
-INSERT INTO deposito(nro_trans, nro_ca) VALUES(1010,1);
-
-INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1011,'2020-11-11','00:00:00',103); 
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1011,10);  
-INSERT INTO extraccion(nro_trans, nro_cliente, nro_ca) VALUES(1011,1,1);
-
-INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1012,'2020-11-12','00:00:00',503); 
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1012,11);  
-INSERT INTO transferencia(nro_trans, nro_cliente, origen, destino) VALUES(1012,7,1,4);
-
+# debito cliente 1 , caja_ahorro=1
 INSERT INTO transaccion(nro_trans, fecha, hora, monto)
-    VALUES(1013,'2020-11-13','00:00:00',70.50); 
+    VALUES(1012,'2020-11-13','00:00:00',70.50); 
 INSERT INTO debito(nro_trans, descripcion, nro_cliente, nro_ca) 
-VALUES(1013,'Pago servicios',1,1); 
+VALUES(1012,'Pago servicios',1,1); 
 
+# deposito caja 2, caja_ahorro 1, 
 INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1014,'2020-11-14','00:00:00',1004); 
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1014,2);  
-INSERT INTO deposito(nro_trans, nro_ca) VALUES(1014,1);
+    VALUES(1012,'2020-11-14','00:00:00',1004); 
+INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1012,2);  
+INSERT INTO deposito(nro_trans, nro_ca) VALUES(1012,1);
 
+# extraccion del cliente 1, caja 12 (atm), caja_ahorro 1
 INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1015,'2020-11-15','00:00:00',104); 
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1015,12);  
-INSERT INTO extraccion(nro_trans, nro_cliente, nro_ca) VALUES(1015,1,1);
-
-INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(1016,'2020-11-16','00:00:00',504); 
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1016,13);  
-INSERT INTO transferencia(nro_trans, nro_cliente, origen, destino) VALUES(1016,7,1,4);
-
-    
-# de la caja de ahorro 2 (un deposito por 2000)
-INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(2,'2018-9-1','00:00:00',2000);
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(2,1);   
-INSERT INTO deposito(nro_trans, nro_ca) VALUES(2,2);
-
-# de la caja de ahorro 3 (un deposito por 3000)
-INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(3,'2018-9-1','00:00:00',3000); 
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(3,1);  
-INSERT INTO deposito(nro_trans, nro_ca) VALUES(3,3);
-
-# de la caja de ahorro 4 (un deposito por 4000)
-INSERT INTO transaccion(nro_trans, fecha, hora, monto) 
-    VALUES(4,'2018-9-1','00:00:00',4000); 
-INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(4,1);  
-INSERT INTO deposito(nro_trans, nro_ca) VALUES(4,4);
+    VALUES(1013,'2020-11-15','00:00:00',104); 
+INSERT INTO transaccion_por_caja(nro_trans, cod_caja) VALUES(1013,12);  
+INSERT INTO extraccion(nro_trans, nro_cliente, nro_ca) VALUES(1013,1,1);
